@@ -101,6 +101,8 @@ async function logout(ctx) {
         ctx.body = { code: 200, message: '退出成功', };
     } catch (error) {
         console.log(error);
+        ctx.status = 500;
+        ctx.body = { code: 500, error: '登出失败' };
     }
 }
 
@@ -114,11 +116,10 @@ async function getUserInfo(ctx) {
     try {
         await authMiddleware(ctx, async () => {
             const { user } = ctx.state;
-            console.log(user);
             const [users] = await db.query('SELECT id,  username, user_id, email, nick, avatar, gender, birthday, phone, registration_time, signature FROM user_list WHERE username = ?', [user.username]);
             if (users.length === 0) {
                 ctx.status = 404;
-                ctx.body = { code: 404, error: '用户不存在' };
+                ctx.body = { code: 401, error: '用户不存在' };
             } else {
                 const user = users[0];
                 ctx.status = 200;
@@ -128,7 +129,7 @@ async function getUserInfo(ctx) {
     } catch (error) {
         console.log(error);
         ctx.status = 500;
-        ctx.body = { error: 'Failed to retrieve user information' };
+        ctx.body = { error: '查询异常' };
     }
 }
 

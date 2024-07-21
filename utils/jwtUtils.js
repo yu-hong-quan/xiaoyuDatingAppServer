@@ -9,7 +9,7 @@ const JWT_SECRET = 'your_jwt_secret';
  * @returns 返回生成的JWT令牌字符串
  */
 function generateToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
 }
 
 /**

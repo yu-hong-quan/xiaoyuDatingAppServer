@@ -19,12 +19,10 @@ async function authMiddleware(ctx, next) {
       ctx.body = { code: 401, error: 'token无效,请重新登录' };
       return;
     }
-
     // 2.提取JWT令牌
     const token = authHeader.split(' ')[1];
     let decodedToken = verifyToken(token);
 
-    console.log('检查JWT令牌是否有效：',blacklistedTokens.has(token));
     // 3.检查JWT令牌是否有效
     if (blacklistedTokens.has(token)) {
       ctx.status = 401;
@@ -40,8 +38,8 @@ async function authMiddleware(ctx, next) {
     }
 
     ctx.state.user = decodedToken;
-    console.log(ctx.state.user);
     await next();
+    
   } catch (error) {
     console.log(error);
     ctx.status = 401;

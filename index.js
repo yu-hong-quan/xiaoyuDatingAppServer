@@ -1,7 +1,9 @@
 const Koa = require('koa');
 const cors = require('@koa/cors');  // 引入 koa-cors 中间件
+const koaBody = require('koa-body');
 const bodyParser = require('koa-bodyparser');
 const authRoutes = require('./routes/authRoutes');
+
 
 const app = new Koa();
 
@@ -12,6 +14,8 @@ app.use(cors({
     headers: 'Authorization,Content-Type',
     credentials: true  // 允许发送 Cookie
 }));
+
+app.use(koaBody({ multipart: true }));
 
 // 解析请求体
 app.use(bodyParser());
@@ -25,6 +29,17 @@ app.use(async (ctx, next) => {
 });
 app.use(authRoutes);
 
-app.listen(3000, () => {
-    console.log('Server running on http://localhost:3000');
+// 引入WebSocket服务器
+app.use(async (ctx, next) => {
+    ctx.websocketServer = wss; // 将WebSocket服务器实例传递给Koa上下文
+    await next();
 });
+
+
+// 启动Koa服务器
+app.listen(8080, () => {
+    console.log('Server running on http://192.168.31.198:8080');
+});
+
+// 在Koa应用程序中同时启动WebSocket服务器。确保两个服务器可以并行运行。
+require('./socketServer/websocketServer');

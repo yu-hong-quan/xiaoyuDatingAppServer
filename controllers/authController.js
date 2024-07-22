@@ -113,10 +113,14 @@ async function logout(ctx) {
  * @returns Promise<void>
  */
 async function getUserInfo(ctx) {
+    let { user_id } = ctx.request.body;
     try {
+        // 验证用户是否登录
         await authMiddleware(ctx, async () => {
-            const { user } = ctx.state;
-            const [users] = await db.query('SELECT id,  username, user_id, email, nick, avatar, gender, birthday, phone, registration_time, signature FROM user_list WHERE username = ?', [user.username]);
+            // const { user } = ctx.state;
+            const [users] = await db.query('SELECT id,  username, user_id, email, nick, avatar, gender, birthday, phone, registration_time, signature FROM user_list WHERE user_id = ?', [user_id]);
+            
+            
             if (users.length === 0) {
                 ctx.status = 404;
                 ctx.body = { code: 401, error: '用户不存在' };
@@ -133,4 +137,35 @@ async function getUserInfo(ctx) {
     }
 }
 
-module.exports = { register, login, checkUserExists, getUserInfo, logout };
+/**
+ * 搜索用户
+ */
+async function searchUsers(ctx) {
+    try {
+        const { keyword } = ctx.request.body;
+        if (!keyword) {
+            ctx.status = 400;
+            ctx.body = { code: 400, error: '搜索关键字不能为空' };
+            return;
+        }
+        await authMiddleware(ctx, async () => {
+            const sql = `
+                SELECT * FROM user_list
+                WHERE username LIKE ? OR email LIKE ?
+            `;
+            const params = [`%${keyword}%`, `%${keyword}%`];
+
+            const [users] = await db.query(sql, params);
+
+            ctx.status = 200;
+            ctx.body = { code: 200, data: users };
+        });
+    } catch (error) {
+        console.log(error);
+        ctx.status = 500;
+        ctx.body = { code: 500, error: '搜索用户异常' };
+    }
+}
+
+
+module.exports = { register, login, checkUserExists, getUserInfo, logout, searchUsers };

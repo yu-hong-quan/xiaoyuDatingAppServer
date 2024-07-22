@@ -11,6 +11,7 @@ let blacklistedTokens = new Set();// 在退出登录时，将令牌加入黑名�
 async function authMiddleware(ctx, next) {
   try {
     const authHeader = ctx.headers.authorization;
+    console.log(ctx.request);
     const { user_id } = ctx.request.body;
 
     // 1.检查授权头部是否存在
@@ -19,6 +20,7 @@ async function authMiddleware(ctx, next) {
       ctx.body = { code: 401, error: 'token无效,请重新登录' };
       return;
     }
+
     // 2.提取JWT令牌
     const token = authHeader.split(' ')[1];
     let decodedToken = verifyToken(token);
@@ -31,11 +33,11 @@ async function authMiddleware(ctx, next) {
     }
 
     // 4.检查JWT令牌中的用户名与请求的用户名是否匹配
-    if (decodedToken.user_id !== user_id) {
-      ctx.status = 401;
-      ctx.body = { code: 401, error: '账户异常,需重新登录' };
-      return;
-    }
+    // if (decodedToken.user_id !== user_id) {
+    //   ctx.status = 401;
+    //   ctx.body = { code: 401, error: '账户异常,需重新登录' };
+    //   return;
+    // }
 
     ctx.state.user = decodedToken;
     await next();
